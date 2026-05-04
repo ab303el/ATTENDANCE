@@ -12,7 +12,7 @@ class AttendanceTests(APITestCase):
         # This runs before every test to "set the stage"
         self.user = User.objects.create_user(username='testuser', password='password123')
         self.employee = Employee.objects.create(user=self.user, name="Test Bob", employee_id="101")
-        self.url = reverse('attendance-list') # Matches the name in urls.py
+        self.url = reverse('attendance-list-create') # Matches the name in urls.py
 
     def test_unauthenticated_user_fails(self):
         """
