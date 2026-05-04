@@ -1,0 +1,51 @@
+name: Django CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      # This starts a real Postgres database in the cloud for your tests!
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: attendance_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ABEL
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Tests
+      env:
+        # We give the robot the credentials it needs to talk to the service above
+        DB_NAME: attendance_db
+        DB_USER: postgres
+        DB_PASSWORD: ABEL
+        DB_HOST: localhost
+        DB_PORT: 5432
+        SECRET_KEY: temporary-key-for-testing
+        DEBUG: True
+      run: |
+        python manage.py test
