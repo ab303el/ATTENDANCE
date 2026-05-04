@@ -26,7 +26,7 @@ class AttendanceTests(APITestCase):
         Verify that once logged in, we get a 200 OK and a paginated list.
         """
         # 1. Get the token
-        login_url = reverse('token_obtain_pair')
+        login_url = reverse('token_obbtain_pair')
         login_res = self.client.post(login_url, {'username': 'testuser', 'password': 'password123'})
         token = login_res.data['access']
 
