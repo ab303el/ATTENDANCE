@@ -1,0 +1,6 @@
+HTTP Method         Endpoint                  Description                                    API Concept
+GET                 /api/attendance/          List all attendance records.                Read (Collection) - Safe, doesn't change data.
+POST                /api/attendance/          Clock in/create a new record.               Create - Sends a JSON payload to make new data.
+GET                 /api/attendance/{id}/     Get a specific record by ID.                Read (Single Item) - Fetches a specific resource.
+PUT/PATCH           /api/attendance/{id}/     "Update a record (e.g., clock out)."        Update - PUT replaces the whole item; PATCH updates parts.
+DELETE              /api/attendance/{id}/     Delete a specific record.                   Delete - Removes the resource.
