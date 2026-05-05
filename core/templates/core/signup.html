@@ -3,7 +3,6 @@
 {% block content %}
 <div class="min-h-[70vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
-        <!-- Brand Icon -->
         <div class="flex justify-center">
             <div class="bg-emerald-100 p-3 rounded-2xl shadow-inner">
                 <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,9 +23,50 @@
             <form method="post" class="space-y-5">
                 {% csrf_token %}
                 
-                <div class="space-y-1">
-                    <!-- Django form fields will be styled by the script in _base.html -->
-                    {{ form.as_p }}
+                <!-- Errors Section -->
+                {% if form.errors %}
+                    <div class="bg-rose-50 border border-rose-100 text-rose-700 p-4 rounded-xl text-sm mb-4">
+                        Please correct the errors below.
+                    </div>
+                {% endif %}
+
+                <!-- Name Row (Grid) -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.first_name.id_for_label }}">First Name</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div>
+                        <label for="{{ form.last_name.id_for_label }}">Last Name</label>
+                        {{ form.last_name }}
+                    </div>
+                </div>
+
+                <!-- Email Field -->
+                <div>
+                    <label for="{{ form.email.id_for_label }}">Email Address</label>
+                    {{ form.email }}
+                    {% if form.email.help_text %}
+                        <span class="helptext">{{ form.email.help_text }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- Username Field -->
+                <div>
+                    <label for="{{ form.username.id_for_label }}">Username</label>
+                    {{ form.username }}
+                </div>
+
+                <!-- Password Fields -->
+                <div class="space-y-5">
+                    <div>
+                        <label for="{{ form.password1.id_for_label }}">Password</label>
+                        {{ form.password1 }}
+                    </div>
+                    <div>
+                        <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                        {{ form.password2 }}
+                    </div>
                 </div>
 
                 <div class="pt-2">
@@ -36,7 +76,6 @@
                 </div>
             </form>
 
-            <!-- Bottom Divider & Redirect -->
             <div class="mt-8 pt-6 border-t border-slate-100">
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm">
                     <span class="text-slate-500 font-medium">Already have an account?</span>
@@ -47,7 +86,6 @@
             </div>
         </div>
 
-        <!-- Security Badge -->
         <div class="mt-8 flex justify-center items-center gap-2 text-slate-400">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
@@ -58,10 +96,7 @@
 </div>
 
 <style>
-    /* Spacing fixes for Django's as_p output */
-    form p {
-        margin-bottom: 1.25rem;
-    }
+    /* Spacing and Label Styling */
     form label {
         display: block;
         font-size: 0.875rem;
@@ -70,12 +105,19 @@
         margin-bottom: 0.35rem;
         margin-left: 0.25rem;
     }
-    /* Specific styling for help text if your Django form uses it */
     form .helptext {
         display: block;
         font-size: 0.75rem;
         color: #94a3b8; /* slate-400 */
         margin-top: 0.25rem;
+    }
+    /* Styles for the auto-generated error lists from Django */
+    .errorlist {
+        color: #e11d48; /* rose-600 */
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        list-style: none;
+        padding-left: 0.25rem;
     }
 </style>
 {% endblock %}

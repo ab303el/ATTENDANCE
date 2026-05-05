@@ -23,6 +23,8 @@ from django.contrib import messages #to show alerts login and account creation s
 
 from django.core.exceptions import PermissionDenied     #admin only
 
+from .forms import EmployeeSignupForm # Import your new form
+
 
 class ManagerLateDashboardAPI(generics.ListCreateAPIView):
 
@@ -242,17 +244,15 @@ class EmployeeDetailAPI(APIView):
 #signup view
 def signup_view(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = EmployeeSignupForm(request.POST) # Use custom form
         if form.is_valid():
-            form.save()
-            messages.success(request, "Account created successfully! You can now login.")
+            user = form.save() # This automatically saves the extra fields too
+            messages.success(request, "Account created successfully!")
             return redirect('login')
-        else:
-            messages.error(request, "Invalid username or password plese insert correct data!.")
     else:
-        form = UserCreationForm()
+        form = EmployeeSignupForm()
     
-    return render(request , 'core/signup.html' , {'form' : form})
+    return render(request, 'core/signup.html', {'form': form})
 
 #login view
 def login_view(request):

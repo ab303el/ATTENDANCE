@@ -4,7 +4,7 @@ from .models import Attendance , Employee
 class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
-        fields = ['id' , 'name' , 'employee_id']
+        fields = ['first_name', 'last_name', 'email', 'employee_id']
 
 class AttendanceSerializer(serializers.ModelSerializer):
     # This automatically nests the employee details or just gives the ID

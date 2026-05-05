@@ -9,6 +9,9 @@ def create_employee_profile(sender, instance, created, **kwargs):
         # 1. Create the Employee table entry
         Employee.objects.get_or_create(
             user=instance,
+            first_name=instance.first_name,
+            last_name=instance.last_name,
+            email=instance.email,
             employee_id=f"EMP-{instance.id}"
         )
         
@@ -23,19 +26,23 @@ def create_employee_profile(sender, instance, created, **kwargs):
 def save_employee_profile(sender, instance, **kwargs):
     # This ensures that if the User is updated, the Employee stays linked
     if hasattr(instance, 'employee'):
+        # Update employee fields if user fields changed
+        instance.employee.email = instance.email
+        instance.employee.name = f"{instance.first_name} {instance.last_name}".strip() or instance.username
         instance.employee.save()
-
 
 class Employee(models.Model):
 
     # Real-World Principle: One-to-One Link
     # Every Employee profile is linked to exactly one User account for login.
     user = models.OneToOneField(User , on_delete=models.CASCADE , null=True , blank=True)
-    name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100 , null=True , blank=True)
+    last_name = models.CharField(max_length=100 , null=True , blank=True)
+    email = models.EmailField(null=True , blank=True)
     employee_id = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
-        return self.name
+        return f"{self.first_name} , {self.last_name}"
 
 class Attendance(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
@@ -45,7 +52,7 @@ class Attendance(models.Model):
     clock_out = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.employee.name} - {self.date}"
+        return f"{self.employee.first_name} - {self.date}"
 
     class Meta:
         unique_together = ('employee', 'date')

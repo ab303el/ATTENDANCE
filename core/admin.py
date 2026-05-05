@@ -12,4 +12,5 @@ class AttendanceAdmin(admin.ModelAdmin):
     readonly_fields = ('clock_in',)
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
-    list_display = ('name' , 'employee_id')
+    list_display = ('first_name', 'last_name', 'email', 'employee_id')
+    search_fields = ('first_name', 'last_name', 'email', 'employee_id')
