@@ -48,8 +48,8 @@
             <div class="h-20 bg-indigo-600"></div>
             <div class="px-6 pb-6">
                 <div class="relative flex justify-center">
-                    <div class="-mt-10 h-20 w-20 bg-white rounded-2xl shadow-md flex items-center justify-center text-2xl font-bold text-indigo-600 border-4 border-white">
-                        {{ user.username|first|upper }}
+                    <div class="-mt-10 h-20 w-20 bg-white rounded-2xl shadow-md flex items-center justify-center text-2xl font-bold text-indigo-600 border-4 border-white uppercase">
+                        {{ user.username|first }}
                     </div>
                 </div>
                 <div class="text-center mt-3">
@@ -84,7 +84,7 @@
         <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white">
             <div>
                 <h3 class="text-lg font-bold text-slate-800">Recent Activity</h3>
-                <p class="text-xs text-slate-400 font-medium">Your last 10 session logs</p>
+                <p class="text-xs text-slate-400 font-medium">Detailed session logs</p>
             </div>
             <div class="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-200">
                 <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -95,23 +95,43 @@
             <table class="w-full text-left">
                 <thead>
                     <tr class="bg-slate-50/50">
+                        <!-- Header Column 1 -->
+                        <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Employee</th>
+                        <!-- Header Column 2 -->
                         <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Date</th>
+                        <!-- Header Column 3 -->
                         <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Clock In</th>
+                        <!-- Header Column 4 -->
                         <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Clock Out</th>
+                        <!-- Header Column 5 -->
                         <th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Status</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     {% for record in records %}
                     <tr class="group hover:bg-slate-50/80 transition-colors">
+                        <!-- 1. Name/Employee -->
                         <td class="px-6 py-4">
-                            <span class="text-sm font-semibold text-slate-700">{{ record.date|date:"d M Y" }}</span>
+                            <div class="flex items-center gap-3">
+                                <div class="h-8 w-8 rounded-full bg-indigo-50 flex items-center justify-center text-[10px] font-bold text-indigo-600 border border-indigo-100 uppercase">
+                                    <!-- Change this line -->
+                                    {{ record.employee.user.username|first }}
+                                </div>
+                                <!-- And this line -->
+                                <span class="text-sm font-bold text-slate-700">{{ record.employee.user.username }}</span>
+                            </div>
                         </td>
+                        <!-- 2. Date -->
+                        <td class="px-6 py-4">
+                            <span class="text-sm font-semibold text-slate-600">{{ record.date|date:"d M Y" }}</span>
+                        </td>
+                        <!-- 3. Clock In -->
                         <td class="px-6 py-4">
                             <div class="flex items-center text-indigo-600">
                                 <span class="text-sm font-bold">{{ record.clock_in|time:"H:i" }}</span>
                             </div>
                         </td>
+                        <!-- 4. Clock Out -->
                         <td class="px-6 py-4">
                             {% if record.clock_out %}
                                 <span class="text-sm font-bold text-slate-600">{{ record.clock_out|time:"H:i" }}</span>
@@ -119,6 +139,7 @@
                                 <span class="text-sm font-medium text-slate-300 italic">-- : --</span>
                             {% endif %}
                         </td>
+                        <!-- 5. Status -->
                         <td class="px-6 py-4 text-center">
                             {% if record.clock_out %}
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
@@ -135,7 +156,8 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" class="px-6 py-12 text-center">
+                        <!-- Updated colspan to 5 -->
+                        <td colspan="5" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center">
                                 <div class="bg-slate-50 p-3 rounded-full mb-3">
                                     <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>

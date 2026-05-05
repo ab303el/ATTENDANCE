@@ -21,6 +21,8 @@ from rest_framework.permissions import IsAdminUser      #only managers/admins
 
 from django.contrib import messages #to show alerts login and account creation success
 
+from django.core.exceptions import PermissionDenied     #admin only
+
 
 class ManagerLateDashboardAPI(generics.ListCreateAPIView):
 
@@ -255,33 +257,78 @@ def signup_view(request):
 #login view
 def login_view(request):
     if request.method == 'POST':
-        form = AuthenticationForm(data = request.POST)
+        form = AuthenticationForm(data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            login(request , user)
+            login(request, user)
             messages.info(request, f"Welcome back, {user.username}!")
-            return redirect('dashboard')
+            
+            # --- NEW REDIRECT LOGIC ---
+            if user.groups.filter(name='Employees').exists():
+                return redirect('employee-dashboard')  # Redirect regular employees
+            else:
+                return redirect('admin-dashboard')           # Redirect admins/staff
+            # --------------------------
+            
         else:
             messages.error(request, "Invalid username or password.")
     else:
         form = AuthenticationForm()
     
-    return render(request , 'core/login.html' , {'form' : form})
+    return render(request, 'core/login.html', {'form': form})
 
 #admin dashboard (staff only)
+
+@login_required
+def dashboard_router(request):
+    # 1. Check if they are in the 'employee' group
+    if request.user.groups.filter(name='Employees').exists():
+        return redirect('employee-dashboard')
+    
+    # 2. Check if they are a Superuser/Manager
+    if request.user.is_superuser or request.user.is_staff:
+        return redirect('dashboard') # This is your admin dashboard
+        
+    return redirect('login')
+
+def admin_only(view_func):
+    def wrapper_func(request, *args, **kwargs):
+        if request.user.groups.filter(name='Employee').exists():
+            raise PermissionDenied # Or redirect to their dashboard
+        else:
+            return view_func(request, *args, **kwargs)
+    return wrapper_func
+
 @login_required
 @user_passes_test(lambda u: u.is_staff)
 def admin_dashboard(request):
-    from .models import Attendance, Employee
-    from django.utils import timezone
+    from .models import Attendance
     
+    # Get ALL records for the admin to see every employee
+    records = Attendance.objects.all().order_by('-date', '-clock_in')
+    
+    # Keep the today_record specific to the logged-in admin for their own clock-in button
     employee = Employee.objects.filter(user=request.user).first()
+    today_record = Attendance.objects.filter(employee=employee, date=timezone.now().date()).first()
+
+    return render(request, 'core/dashboard.html', {
+        'records': records, # All records for the table
+        'today_record': today_record, # Admin's own record for the button
+        'today': timezone.now().date()
+    })
+
+@login_required
+def employee_dashboard(request):
+    """View for regular users who are NOT staff."""
+    # This automatically gets the Employee profile linked to this User
+    try:
+        employee = request.user.employee 
+    except Employee.DoesNotExist:
+        # Fallback if no employee profile exists yet
+        return render(request, 'core/error.html', {'message': 'Employee profile missing.'})
+
     today = timezone.now().date()
-    
-    # Get today's specific record for the button logic
     today_record = Attendance.objects.filter(employee=employee, date=today).first()
-    
-    # Get all records for the history table
     records = Attendance.objects.filter(employee=employee).order_by('-date')[:10]
     
     return render(request, 'core/dashboard.html', {
@@ -289,7 +336,6 @@ def admin_dashboard(request):
         'today_record': today_record,
         'today': today
     })
-
 #profile view
 @login_required
 def profile_view(request):
@@ -301,17 +347,18 @@ def profile_view(request):
 #attendance clock in and out 
 @login_required
 def attendance_action(request):
+    # Use request.user.employee if you have the OneToOne relationship
     employee = Employee.objects.filter(user=request.user).first()
+    
     if not employee:
         messages.error(request, "Employee profile missing.")
-        return redirect('dashboard')
+        # Fix: Redirect to admin-dashboard if staff, otherwise login
+        return redirect('admin-dashboard' if request.user.is_staff else 'login')
 
     today = timezone.now().date()
-    # Try to find an existing record for today
     attendance = Attendance.objects.filter(employee=employee, date=today).first()
 
     if not attendance:
-        # ACTION: Clock In
         Attendance.objects.create(
             employee=employee,
             date=today,
@@ -320,16 +367,19 @@ def attendance_action(request):
         messages.success(request, "Clock-in successful!")
     
     elif attendance.clock_in and not attendance.clock_out:
-        # ACTION: Clock Out
         attendance.clock_out = timezone.now()
         attendance.save()
-        messages.info(request, "Clock-out successful! Work finished.")
+        messages.info(request, "Clock-out successful!")
     
     else:
-        # ALREADY FINISHED
-        messages.warning(request, "You have already completed your shift for today.")
+        messages.warning(request, "Shift already completed for today.")
 
-    return redirect('dashboard')
+    # --- FIX: DYNAMIC REDIRECT ---
+    if request.user.is_staff or request.user.is_superuser:
+        return redirect('admin-dashboard')
+    
+    return redirect('employee-dashboard')
+
 
 
 

@@ -23,7 +23,7 @@ from rest_framework_simplejwt.views import (
 
 )
 
-from core.views import AttendanceListCreateAPI , EmployeeListCreateAPI , AttendanceDetailAPI , EmployeeDetailAPI , ManagerLateDashboardAPI , login_view , signup_view , admin_dashboard , profile_view , attendance_action
+from core.views import AttendanceListCreateAPI , EmployeeListCreateAPI , AttendanceDetailAPI , EmployeeDetailAPI , ManagerLateDashboardAPI , login_view , signup_view , admin_dashboard , profile_view , attendance_action , employee_dashboard
 # This tells DRF: "By default, force everyone to authenticate using JWT."
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -44,10 +44,11 @@ urlpatterns = [
 
     # Web Pages
     path('core/signup/', signup_view, name='signup'),
-    path('core/login/', login_view, name='login'),
+    path('', login_view, name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     # path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
-    path('core/dashboard/', admin_dashboard, name='dashboard'),
+    path('core/admin-dashboard/', admin_dashboard, name='admin-dashboard'),
+    path('core/employee-dashboard/', employee_dashboard, name='employee-dashboard'),
     path('core/profile/', profile_view, name='profile'),
     path('core/attendance/action/', attendance_action, name='attendance-action'),
 

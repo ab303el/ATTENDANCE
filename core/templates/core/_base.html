@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance System</title>
     
-    <!-- Using Google Fonts for a more modern feel -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Correct Tailwind Play CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script>
@@ -29,7 +27,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
-                    <a href="{% url 'dashboard' %}" class="flex items-center gap-2 group">
+                    <a href="{% url 'admin-dashboard' %}" class="flex items-center gap-2 group">
                         <div class="bg-indigo-600 p-2 rounded-lg transition-transform group-hover:scale-105">
                             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         </div>
@@ -37,12 +35,20 @@
                     </a>
                 </div>
 
-                <div class="flex items-center gap-6">
+                <div class="flex items-center gap-4 md:gap-6">
                     {% if user.is_authenticated %}
-                        <div class="hidden md:flex flex-col items-end">
-                            <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Signed in as</span>
-                            <span class="text-sm font-medium text-slate-800">{{ user.username }}</span>
+                        {% if user.is_staff %}
+                            <a href="{% url 'admin-dashboard' %}" class="flex items-center gap-2 text-sm font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-2 rounded-lg transition-colors border border-indigo-100">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <span class="hidden sm:inline">Manager Panel</span>
+                            </a>
+                        {% endif %}
+
+                        <div class="hidden md:flex flex-col items-end border-l border-slate-200 pl-6">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none">Signed in</span>
+                            <span class="text-sm font-bold text-slate-800">Hello, {{ user.username }}</span>
                         </div>
+
                         <form action="{% url 'logout' %}" method="post" class="inline">
                             {% csrf_token %}
                             <button type="submit" class="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm">
@@ -51,7 +57,7 @@
                         </form>
                     {% else %}
                         <a href="{% url 'login' %}" class="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors">Login</a>
-                        <a href="{% url 'signup' %}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-all shadow-md shadow-indigo-100">
+                        <a href="{% url 'signup' %}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-all shadow-md">
                             Sign Up
                         </a>
                     {% endif %}
@@ -63,6 +69,23 @@
     <!-- Main Content Area -->
     <main class="flex-grow container mx-auto max-w-5xl mt-8 px-4 sm:px-6 lg:px-8 mb-12">
         
+        <!-- Group-based Context Header -->
+        {% if user.is_authenticated %}
+        <div class="mb-6">
+            {% if request.user.groups.all.0.name == 'Employees' %}
+                <div class="flex items-center gap-3 px-5 py-3 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-700 shadow-sm">
+                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    <span class="text-sm font-bold tracking-tight">Your Attendance History</span>
+                </div>
+            {% else %}
+                <div class="flex items-center gap-3 px-5 py-3 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-700 shadow-sm">
+                    <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    <span class="text-sm font-bold tracking-tight">Company Overview & Late Reports</span>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <!-- Alerts/Messages -->
         {% if messages %}
             <div class="space-y-3 mb-8">
@@ -106,8 +129,6 @@
 
     <!-- Form Helper Classes -->
     <script>
-        // This script automatically styles any input fields generated by Django forms 
-        // to match the Tailwind design without needing manual CSS.
         document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]), select, textarea').forEach(el => {
             el.classList.add('mt-1', 'block', 'w-full', 'rounded-lg', 'border-slate-300', 'shadow-sm', 'focus:border-indigo-500', 'focus:ring-indigo-500', 'sm:text-sm', 'p-2.5', 'border');
         });

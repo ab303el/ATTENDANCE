@@ -1,5 +1,29 @@
 from django.db import models
-from django.contrib.auth.models import User  # Import Django's built-in User
+from django.contrib.auth.models import User , Group # Import Django's built-in User 
+from django.db.models.signals import post_save # user profile
+from django.dispatch import receiver
+
+@receiver(post_save, sender=User)
+def create_employee_profile(sender, instance, created, **kwargs):
+    if created:
+        # 1. Create the Employee table entry
+        Employee.objects.get_or_create(
+            user=instance,
+            employee_id=f"EMP-{instance.id}"
+        )
+        
+        # 2. Automatically connect them to the 'Employees' group
+        try:
+            group = Group.objects.get(name='Employees')
+            instance.groups.add(group) #
+        except Group.DoesNotExist:
+            pass # Group hasn't been created in Admin yet
+
+@receiver(post_save, sender=User)
+def save_employee_profile(sender, instance, **kwargs):
+    # This ensures that if the User is updated, the Employee stays linked
+    if hasattr(instance, 'employee'):
+        instance.employee.save()
 
 
 class Employee(models.Model):
