@@ -1,0 +1,81 @@
+{% extends 'core/_base.html' %}
+
+{% block content %}
+<div class="min-h-[60vh] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-md">
+        <!-- Optional: Small Logo or Icon above the card -->
+        <div class="flex justify-center">
+            <div class="bg-indigo-100 p-3 rounded-2xl">
+                <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+            </div>
+        </div>
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-slate-900 tracking-tight">
+            Welcome back
+        </h2>
+        <p class="mt-2 text-center text-sm text-slate-500">
+            Please enter your details to access your portal
+        </p>
+    </div>
+
+    <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div class="bg-white py-8 px-4 shadow-sm border border-slate-200 sm:rounded-2xl sm:px-10">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="space-y-1">
+                    {# Django renders form labels and inputs here #}
+                    {# The JS in your _base.html will style these inputs automatically #}
+                    {{ form.as_p }}
+                </div>
+
+                <div>
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all active:scale-[0.98]">
+                        Sign In
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6">
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-slate-200"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-2 bg-white text-slate-400 font-medium">New here?</span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <a href="{% url 'signup' %}" class="w-full flex justify-center py-3 px-4 border border-slate-300 rounded-xl shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-colors">
+                        Create an account
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <p class="mt-8 text-center text-xs text-slate-400">
+            Secure 256-bit SSL Encrypted Connection
+        </p>
+    </div>
+</div>
+
+<style>
+    /* 
+       Django's form.as_p wraps everything in <p> tags. 
+       This CSS snippet ensures they are spaced nicely 
+       without you having to manually edit every form.
+    */
+    form p {
+        margin-bottom: 1.25rem;
+    }
+    form label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #475569; /* slate-600 */
+        margin-bottom: 0.25rem;
+    }
+</style>
+{% endblock %}

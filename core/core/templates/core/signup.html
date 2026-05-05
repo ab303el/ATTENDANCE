@@ -1,0 +1,13 @@
+{% extends 'core/_base.html' %}
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-8 border border-gray-200 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Register Employee</h2>
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
+            Create Account
+        </button>
+    </form>
+</div>
+{% endblock %}

@@ -16,13 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from rest_framework_simplejwt.views import (
     TokenObtainPairView ,# This tells DRF: "By default, force everyone to authenticate using JWT." 
     TokenRefreshView , 
 
 )
 
-from core.views import AttendanceListCreateAPI , EmployeeListCreateAPI , AttendanceDetailAPI , EmployeeDetailAPI
+from core.views import AttendanceListCreateAPI , EmployeeListCreateAPI , AttendanceDetailAPI , EmployeeDetailAPI , ManagerLateDashboardAPI , login_view , signup_view , admin_dashboard , profile_view , attendance_action
 # This tells DRF: "By default, force everyone to authenticate using JWT."
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,4 +39,17 @@ urlpatterns = [
 
     # POST your Refresh token here to get a new Access token when the old one expires
     path('api/token/refresh' , TokenRefreshView.as_view() , name='token_refresh'),
+
+    path('api/manager/dashboard/late/' , ManagerLateDashboardAPI.as_view() , name='manager-late-dashboard') ,
+
+    # Web Pages
+    path('core/signup/', signup_view, name='signup'),
+    path('core/login/', login_view, name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    # path('logout/', LogoutView.as_view(next_page='login'), name='logout'),
+    path('core/dashboard/', admin_dashboard, name='dashboard'),
+    path('core/profile/', profile_view, name='profile'),
+    path('core/attendance/action/', attendance_action, name='attendance-action'),
+
+
 ]

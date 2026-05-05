@@ -64,7 +64,7 @@ ROOT_URLCONF = 'attendance.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'core', 'templates')], # Add this line
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -165,3 +165,5 @@ SPECTACULAR_SETTINGS = {
         {'url': 'http://127.0.0.1:8000', 'description': 'Local Development Server'},
     ],
 }
+
+LOGOUT_REDIRECT_URL = 'login'  # or 'dashboard'

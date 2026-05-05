@@ -1,4 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render , redirect
+from django.contrib.auth import login , authenticate
+from django.contrib.auth.forms import UserCreationForm , AuthenticationForm
+from django.contrib.auth.decorators import login_required , user_passes_test
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated  #the bouncer
@@ -11,6 +14,46 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import generics   # Filtering, Searching, and Sorting.
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter , OrderingFilter
+
+from datetime import time
+from django.utils import timezone
+from rest_framework.permissions import IsAdminUser      #only managers/admins
+
+from django.contrib import messages #to show alerts login and account creation success
+
+
+class ManagerLateDashboardAPI(generics.ListCreateAPIView):
+
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        # 1. Get today's date as a string (avoids the fromisoformat error)
+        today_str = timezone.now().date().isoformat() 
+        
+        # 2. Get all records for today from the DB
+        today_records = Attendance.objects.filter(date=today_str)
+
+        # 3. Filter in Python to find late employees (Clock in > 9:00 AM)
+        work_start_time = time(9, 0, 0) 
+        late_records = []
+        
+        for record in today_records:
+            # Ensure clock_in exists, then compare only the time portion
+            if record.clock_in and record.clock_in.time() > work_start_time:
+                late_records.append(record)
+
+        # 4. Serialize and Return
+        serializer = AttendanceSerializer(late_records, many=True)
+        
+        return Response({
+            "status": "success",
+            "manager_user": request.user.username,
+            "date": today_str,
+            "late_count": len(late_records),
+            "late_employees": serializer.data
+        })
+
+
 
 # class AttendanceListCreateAPI(APIView):
 
@@ -191,3 +234,102 @@ class EmployeeDetailAPI(APIView):
         employee = self.get_object(pk=pk)
         employee.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# web page views
+#signup view
+def signup_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Account created successfully! You can now login.")
+            return redirect('login')
+        else:
+            messages.error(request, "Invalid username or password plese insert correct data!.")
+    else:
+        form = UserCreationForm()
+    
+    return render(request , 'core/signup.html' , {'form' : form})
+
+#login view
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(data = request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request , user)
+            messages.info(request, f"Welcome back, {user.username}!")
+            return redirect('dashboard')
+        else:
+            messages.error(request, "Invalid username or password.")
+    else:
+        form = AuthenticationForm()
+    
+    return render(request , 'core/login.html' , {'form' : form})
+
+#admin dashboard (staff only)
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def admin_dashboard(request):
+    from .models import Attendance, Employee
+    from django.utils import timezone
+    
+    employee = Employee.objects.filter(user=request.user).first()
+    today = timezone.now().date()
+    
+    # Get today's specific record for the button logic
+    today_record = Attendance.objects.filter(employee=employee, date=today).first()
+    
+    # Get all records for the history table
+    records = Attendance.objects.filter(employee=employee).order_by('-date')[:10]
+    
+    return render(request, 'core/dashboard.html', {
+        'records': records,
+        'today_record': today_record,
+        'today': today
+    })
+
+#profile view
+@login_required
+def profile_view(request):
+    # Fetch the employee object linked to the user
+    from .models import Employee
+    employee = Employee.objects.filter(user=request.user).first()
+    return render(request, 'core/profile.html', {'employee': employee})
+
+#attendance clock in and out 
+@login_required
+def attendance_action(request):
+    employee = Employee.objects.filter(user=request.user).first()
+    if not employee:
+        messages.error(request, "Employee profile missing.")
+        return redirect('dashboard')
+
+    today = timezone.now().date()
+    # Try to find an existing record for today
+    attendance = Attendance.objects.filter(employee=employee, date=today).first()
+
+    if not attendance:
+        # ACTION: Clock In
+        Attendance.objects.create(
+            employee=employee,
+            date=today,
+            clock_in=timezone.now()
+        )
+        messages.success(request, "Clock-in successful!")
+    
+    elif attendance.clock_in and not attendance.clock_out:
+        # ACTION: Clock Out
+        attendance.clock_out = timezone.now()
+        attendance.save()
+        messages.info(request, "Clock-out successful! Work finished.")
+    
+    else:
+        # ALREADY FINISHED
+        messages.warning(request, "You have already completed your shift for today.")
+
+    return redirect('dashboard')
+
+
+
