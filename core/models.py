@@ -42,7 +42,7 @@ class Employee(models.Model):
     employee_id = models.CharField(max_length=20, unique=True)
 
     def __str__(self):
-        return f"{self.first_name} , {self.last_name}"
+        return f"{self.first_name}  {self.last_name}"
 
 class Attendance(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
@@ -56,3 +56,4 @@ class Attendance(models.Model):
 
     class Meta:
         unique_together = ('employee', 'date')
+        ordering  = ['-date' , '-clock_in']

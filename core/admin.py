@@ -7,7 +7,7 @@ from .models import Attendance , Employee
 
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
-    list_display = ('employee' ,'clock_in' , 'clock_out')
+    list_display = ('employee' , 'date','clock_in' , 'clock_out')
     fields = ('employee' , 'clock_out')
     readonly_fields = ('clock_in',)
 @admin.register(Employee)
