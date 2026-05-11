@@ -179,3 +179,7 @@ LOGIN_REDIRECT_URL = 'dashboard-router' # Match the name in your urls.py
 # Tell Django to use your 'login' name instead of '/accounts/login/'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'admin-dashboard' # or 'employee-dashboard' depending on your router
+
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
