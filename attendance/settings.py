@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     'core',
+    'sendmail',
 ]
 
 MIDDLEWARE = [
@@ -182,4 +183,4 @@ LOGIN_REDIRECT_URL = 'admin-dashboard' # or 'employee-dashboard' depending on yo
 
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
