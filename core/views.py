@@ -381,5 +381,46 @@ def attendance_action(request):
     return redirect('employee-dashboard')
 
 
+@login_required
+def dashboard_router(request):
+    """
+    This view decides where to send the user right after login.
+    """
+    if request.user.is_superuser or request.user.is_staff:
+        return redirect('admin-dashboard')
+    
+    # Check if a non-staff employee exists, otherwise redirect to a default
+    try:
+        return redirect('employee-dashboard')
+    except:
+        return redirect('login')
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def admin_dashboard(request):
+    """
+    The Template view for Admins.
+    """
+    return render(request, 'core/admin_dashboard.html')
+
+@login_required
+def employee_dashboard(request):
+    """
+    The Template view for regular Employees.
+    """
+    return render(request, 'core/employee_dashboard.html')
+
+def signup_view(request):
+    if request.method == 'POST':
+        form = EmployeeSignupForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            messages.success(request, "Account created successfully!")
+            return redirect('dashboard-router')
+    else:
+        form = EmployeeSignupForm()
+    return render(request, 'core/signup.html', {'form': form})
+
 
 
