@@ -177,7 +177,7 @@ SPECTACULAR_SETTINGS = {
 
 LOGOUT_REDIRECT_URL = 'login'  # or 'dashboard'
 
-LOGIN_REDIRECT_URL = 'dashboard-router'
+LOGIN_REDIRECT_URL = 'dashboard-router/'
 # Tell Django to use your 'login' name instead of '/accounts/login/'
 LOGIN_URL = 'login'
 
