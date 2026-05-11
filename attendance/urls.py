@@ -23,7 +23,7 @@ from rest_framework_simplejwt.views import (
 
 )
 
-from core.views import AttendanceListCreateAPI , EmployeeListCreateAPI , AttendanceDetailAPI , EmployeeDetailAPI , ManagerLateDashboardAPI , login_view , signup_view , admin_dashboard , profile_view , attendance_action , employee_dashboard
+from core.views import AttendanceListCreateAPI , EmployeeListCreateAPI , AttendanceDetailAPI , EmployeeDetailAPI , ManagerLateDashboardAPI , login_view , signup_view , admin_dashboard , profile_view , attendance_action , employee_dashboard , dashboard_router
 # This tells DRF: "By default, force everyone to authenticate using JWT."
 urlpatterns = [
     path('admin/', admin.site.urls),
