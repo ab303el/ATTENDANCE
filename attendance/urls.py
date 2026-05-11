@@ -52,5 +52,7 @@ urlpatterns = [
     path('core/profile/', profile_view, name='profile'),
     path('core/attendance/action/', attendance_action, name='attendance-action'),
 
+    path('dashboard-router/', dashboard_router, name='dashboard-router'),,
+
 
 ]
