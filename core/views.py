@@ -242,179 +242,29 @@ class EmployeeDetailAPI(APIView):
 
 # web page views
 #signup view
-def signup_view(request):
-    if request.method == 'POST':
-        form = EmployeeSignupForm(request.POST) # Use custom form
-        if form.is_valid():
-            user = form.save() # This automatically saves the extra fields too
-            messages.success(request, "Account created successfully!")
-            return redirect('login')
-    else:
-        form = EmployeeSignupForm()
-    
-    return render(request, 'core/signup.html', {'form': form})
+from django.contrib.auth.models import Group
 
-#login view
 def login_view(request):
     if request.method == 'POST':
-        form = AuthenticationForm(data=request.POST)
+        form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            messages.info(request, f"Welcome back, {user.username}!")
-            
-            # --- NEW REDIRECT LOGIC ---
-            if user.groups.filter(name='Employees').exists():
-                return redirect('employee-dashboard')  # Redirect regular employees
-            else:
-                return redirect('admin-dashboard')           # Redirect admins/staff
-            # --------------------------
-            
-        else:
-            messages.error(request, "Invalid username or password.")
+            # Redirect to the router which decides the dashboard
+            return redirect('dashboard-router')
     else:
         form = AuthenticationForm()
-    
     return render(request, 'core/login.html', {'form': form})
-
-#admin dashboard (staff only)
-
-@login_required
-def dashboard_router(request):
-    # 1. Check if they are in the 'employee' group
-    if request.user.groups.filter(name='Employees').exists():
-        return redirect('employee-dashboard')
-    
-    # 2. Check if they are a Superuser/Manager
-    if request.user.is_superuser or request.user.is_staff:
-        return redirect('dashboard') # This is your admin dashboard
-        
-    return redirect('login')
-
-def admin_only(view_func):
-    def wrapper_func(request, *args, **kwargs):
-        if request.user.groups.filter(name='Employee').exists():
-            raise PermissionDenied # Or redirect to their dashboard
-        else:
-            return view_func(request, *args, **kwargs)
-    return wrapper_func
-
-@login_required
-@user_passes_test(lambda u: u.is_staff)
-def admin_dashboard(request):
-    from .models import Attendance
-    
-    # Get ALL records for the admin to see every employee
-    records = Attendance.objects.all().order_by('-date', '-clock_in')
-    
-    # Keep the today_record specific to the logged-in admin for their own clock-in button
-    employee = Employee.objects.filter(user=request.user).first()
-    today_record = Attendance.objects.filter(employee=employee, date=timezone.now().date()).first()
-
-    return render(request, 'core/dashboard.html', {
-        'records': records, # All records for the table
-        'today_record': today_record, # Admin's own record for the button
-        'today': timezone.now().date()
-    })
-
-@login_required
-def employee_dashboard(request):
-    """View for regular users who are NOT staff."""
-    # This automatically gets the Employee profile linked to this User
-    try:
-        employee = request.user.employee 
-    except Employee.DoesNotExist:
-        # Fallback if no employee profile exists yet
-        return render(request, 'core/error.html', {'message': 'Employee profile missing.'})
-
-    today = timezone.now().date()
-    today_record = Attendance.objects.filter(employee=employee, date=today).first()
-    records = Attendance.objects.filter(employee=employee).order_by('-date')[:10]
-    
-    return render(request, 'core/dashboard.html', {
-        'records': records,
-        'today_record': today_record,
-        'today': today
-    })
-#profile view
-@login_required
-def profile_view(request):
-    # Fetch the employee object linked to the user
-    from .models import Employee
-    employee = Employee.objects.filter(user=request.user).first()
-    return render(request, 'core/profile.html', {'employee': employee})
-
-#attendance clock in and out 
-@login_required
-def attendance_action(request):
-    # Use request.user.employee if you have the OneToOne relationship
-    employee = Employee.objects.filter(user=request.user).first()
-    
-    if not employee:
-        messages.error(request, "Employee profile missing.")
-        # Fix: Redirect to admin-dashboard if staff, otherwise login
-        return redirect('admin-dashboard' if request.user.is_staff else 'login')
-
-    today = timezone.now().date()
-    attendance = Attendance.objects.filter(employee=employee, date=today).first()
-
-    if not attendance:
-        Attendance.objects.create(
-            employee=employee,
-            date=today,
-            clock_in=timezone.now()
-        )
-        messages.success(request, "Clock-in successful!")
-    
-    elif attendance.clock_in and not attendance.clock_out:
-        attendance.clock_out = timezone.now()
-        attendance.save()
-        messages.info(request, "Clock-out successful!")
-    
-    else:
-        messages.warning(request, "Shift already completed for today.")
-
-    # --- FIX: DYNAMIC REDIRECT ---
-    if request.user.is_staff or request.user.is_superuser:
-        return redirect('admin-dashboard')
-    
-    return redirect('employee-dashboard')
-
-
-@login_required
-def dashboard_router(request):
-    """
-    This view decides where to send the user right after login.
-    """
-    if request.user.is_superuser or request.user.is_staff:
-        return redirect('admin-dashboard')
-    
-    # Check if a non-staff employee exists, otherwise redirect to a default
-    try:
-        return redirect('employee-dashboard')
-    except:
-        return redirect('login')
-
-@login_required
-@user_passes_test(lambda u: u.is_staff)
-def admin_dashboard(request):
-    """
-    The Template view for Admins.
-    """
-    return render(request, 'core/admin_dashboard.html')
-
-@login_required
-def employee_dashboard(request):
-    """
-    The Template view for regular Employees.
-    """
-    return render(request, 'core/employee_dashboard.html')
 
 def signup_view(request):
     if request.method == 'POST':
         form = EmployeeSignupForm(request.POST)
         if form.is_valid():
             user = form.save()
+            # AUTO-CREATE GROUP IF MISSING
+            employee_group, created = Group.objects.get_or_create(name='Employee')
+            user.groups.add(employee_group)
+            
             login(request, user)
             messages.success(request, "Account created successfully!")
             return redirect('dashboard-router')
@@ -422,5 +272,36 @@ def signup_view(request):
         form = EmployeeSignupForm()
     return render(request, 'core/signup.html', {'form': form})
 
+@login_required
+def dashboard_router(request):
+    """
+    Decides where to send the user safely.
+    """
+    if request.user.is_superuser or request.user.is_staff:
+        return redirect('admin-dashboard')
+    
+    # Check for group safely without crashing
+    if request.user.groups.filter(name='Employees').exists():
+        return redirect('employee-dashboard')
+        
+    # Default fallback so no one gets 'bounced'
+    return redirect('employee-dashboard')
 
+@login_required
+def admin_dashboard(request):
+    if not request.user.is_staff:
+        return redirect('employee-dashboard')
+    return render(request, 'core/admin_dashboard.html')
 
+@login_required
+def employee_dashboard(request):
+    return render(request, 'core/employee_dashboard.html')
+
+@login_required
+def profile_view(request):
+    return render(request, 'core/profile.html')
+
+@login_required
+def attendance_action(request):
+    # Your logic for clocking in/out
+    return redirect('employee-dashboard')
