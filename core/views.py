@@ -291,7 +291,7 @@ def dashboard_router(request):
 def admin_dashboard(request):
     if not request.user.is_staff:
         return redirect('employee-dashboard')
-    return render(request, 'core/admin_dashboard.html')
+    return render(request, 'core/dashboard.html')
 
 @login_required
 def employee_dashboard(request):
