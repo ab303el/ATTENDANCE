@@ -110,11 +110,10 @@ WSGI_APPLICATION = 'attendance.wsgi.application'
 
 
 # This is the "Railway Standard" way
-
 import dj_database_url
 
 DATABASES = {
-    'default': dj_database_url.parse('postgresql://postgres.wcdnwwnhonvfdppfzgeg:HtvDDaVK9zP3rst5@aws-1-eu-central-1.pooler.supabase.com:6543/postgres?pgbouncer=true')
+    'default': dj_database_url.parse('postgresql://postgres.wcdnwwnhonvfdppfzgeg:HtvDDaVK9zP3rst5@://supabase.com')
 }
 
 
