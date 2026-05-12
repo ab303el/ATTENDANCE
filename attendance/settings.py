@@ -122,7 +122,8 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres.wcdnwwnhonvfdppfzgeg',
         'PASSWORD': 'HtvDDaVK9zP3rst5',
-        'HOST': '://supabase.com',
+        # Remove the '://' and use the specific pooler host
+        'HOST': 'aws-1-eu-central-1.pooler.supabase.com',
         'PORT': '6543',
     }
 }
