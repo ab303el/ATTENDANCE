@@ -14,6 +14,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import generics   # Filtering, Searching, and Sorting.
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter , OrderingFilter
+from django.views.decorators.cache import never_cache
 
 from datetime import time
 from django.utils import timezone
@@ -285,14 +286,20 @@ def dashboard_router(request):
     return redirect('employee-dashboard')
 
 @login_required
+@never_cache
 def admin_dashboard(request):
     if not request.user.is_staff:
-        return redirect('employee_dashboard')
-    
-    # Fetch EVERY attendance record for the admin to see
-    attendances = Attendance.objects.all().order_by('-date', '-clock_in')
-    
-    return render(request, 'core/dashboard.html', {'attendances': attendances})
+        return redirect('employee-dashboard')
+
+    # 1. FORCE a fresh query from the DB (using .all())
+    # 2. Ensure we aren't filtering by 'request.user' here
+    records = Attendance.objects.all().order_by('-date', '-clock_in')
+
+    context = {
+        'records': records, # This matches the name in your template
+        'is_admin': True,
+    }
+    return render(request, 'core/dashboard.html', context)
 
 
 @login_required
