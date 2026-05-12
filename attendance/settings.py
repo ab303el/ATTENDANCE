@@ -215,3 +215,11 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # settings.py
 TIME_ZONE = 'Africa/Addis_Ababa' # Change this to your actual timezone
 USE_TZ = True
+
+# Add this to settings.py
+CSRF_TRUSTED_ORIGINS = [
+    'https://railway.app',
+    'https://*.up.railway.app'  # This covers any Railway subdomains
+]
+
+
