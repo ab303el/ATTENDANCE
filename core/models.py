@@ -4,23 +4,24 @@ from django.db.models.signals import post_save # user profile
 from django.dispatch import receiver
 
 @receiver(post_save, sender=User)
-def create_employee_profile(sender, instance, created, **kwargs):
-    if created:
-        # 1. Create the Employee table entry
+def manage_employee_profile(sender, instance, created, **kwargs):
+    # Only act if the user is NOT a staff member
+    if not instance.is_staff:
         Employee.objects.get_or_create(
             user=instance,
-            first_name=instance.first_name,
-            last_name=instance.last_name,
-            email=instance.email,
-            employee_id=f"EMP-{instance.id}"
+            defaults={
+                'first_name': instance.first_name or instance.username,
+                'last_name': instance.last_name or "",
+                'email': instance.email,
+                'employee_id': f"EMP-{instance.id}"
+            }
         )
-        
-        # 2. Automatically connect them to the 'Employees' group
-        try:
-            group = Group.objects.get(name='Employees')
-            instance.groups.add(group) #
-        except Group.DoesNotExist:
-            pass # Group hasn't been created in Admin yet
+    else:
+        # Optional: If an admin (staff) was previously an employee, 
+        # you might want to remove them from the Employee table.
+        # Remove the '#' below if you want to auto-delete admin records:
+        # Employee.objects.filter(user=instance).delete()
+        pass
 
 @receiver(post_save, sender=User)
 def save_employee_profile(sender, instance, **kwargs):
