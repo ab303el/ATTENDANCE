@@ -109,9 +109,11 @@ WSGI_APPLICATION = 'attendance.wsgi.application'
 
 
 # This is the "Railway Standard" way
+
 DATABASES = {
     'default': dj_database_url.parse('postgresql://postgres.wcdnwwnhonvfdppfzgeg:HtvDDaVK9zP3rst5@://supabase.com')
 }
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
