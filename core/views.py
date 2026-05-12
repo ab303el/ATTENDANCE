@@ -290,12 +290,24 @@ def dashboard_router(request):
 @login_required
 def admin_dashboard(request):
     if not request.user.is_staff:
-        return redirect('employee-dashboard')
-    return render(request, 'core/dashboard.html')
+        return redirect('employee_dashboard')
+    
+    # Fetch EVERY attendance record for the admin to see
+    attendances = Attendance.objects.all().order_by('-date', '-clock_in')
+    
+    return render(request, 'core/dashboard.html', {'attendances': attendances})
 
 @login_required
 def employee_dashboard(request):
-    return render(request, 'core/employee_dashboard.html')
+    # 1. Get the employee profile for the logged-in user
+    try:
+        employee_profile = Employee.objects.get(user=request.user)
+        # 2. Get only THEIR attendance records
+        attendances = Attendance.objects.filter(employee=employee_profile).order_by('-date')
+    except Employee.DoesNotExist:
+        attendances = []
+
+    return render(request, 'core/employee_dashboard.html', {'attendances': attendances})
 
 @login_required
 def profile_view(request):
@@ -303,5 +315,18 @@ def profile_view(request):
 
 @login_required
 def attendance_action(request):
-    # Your logic for clocking in/out
+    if request.method == 'POST':
+        try:
+            employee_profile = Employee.objects.get(user=request.user)
+            
+            # Create the attendance record
+            Attendance.objects.create(
+                employee=employee_profile,
+                date=timezone.now().date(),
+                clock_in=timezone.now()
+            )
+            messages.success(request, "Clocked in successfully!")
+        except Employee.DoesNotExist:
+            messages.error(request, "Employee profile not found.")
+            
     return redirect('dashboard-router')
