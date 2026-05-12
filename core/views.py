@@ -272,19 +272,16 @@ def signup_view(request):
         form = EmployeeSignupForm()
     return render(request, 'core/signup.html', {'form': form})
 
+
 @login_required
 def dashboard_router(request):
     """
     Decides where to send the user safely.
     """
-    if request.user.is_superuser or request.user.is_staff:
+    if request.user.is_staff: # Admin/Manager
         return redirect('admin-dashboard')
     
-    # Check for group safely without crashing
-    if request.user.groups.filter(name='Employee').exists():
-        return redirect('employee-dashboard')
-        
-    # Default fallback so no one gets 'bounced'
+    # Regular User
     return redirect('employee-dashboard')
 
 @login_required
@@ -297,17 +294,30 @@ def admin_dashboard(request):
     
     return render(request, 'core/dashboard.html', {'attendances': attendances})
 
+
 @login_required
 def employee_dashboard(request):
-    # 1. Get the employee profile for the logged-in user
+    # 1. Safely get the Employee profile
     try:
         employee_profile = Employee.objects.get(user=request.user)
-        # 2. Get only THEIR attendance records
-        attendances = Attendance.objects.filter(employee=employee_profile).order_by('-date')
     except Employee.DoesNotExist:
-        attendances = []
+        messages.error(request, "Employee profile not found. Please contact Admin.")
+        return redirect('profile')
 
-    return render(request, 'core/employee_dashboard.html', {'attendances': attendances})
+    # 2. Get today's info for the button state
+    today = timezone.now().date()
+    # Check if they have a record for today
+    today_record = Attendance.objects.filter(employee=employee_profile, date=today).first()
+
+    # 3. Get recent logs (Last 10) for the table
+    records = Attendance.objects.filter(employee=employee_profile).order_by('-date', '-clock_in')[:10]
+
+    context = {
+        'today': today,
+        'today_record': today_record,
+        'records': records,
+    }
+    return render(request, 'core/employee_dashboard.html', context)
 
 @login_required
 def profile_view(request):
@@ -318,15 +328,31 @@ def attendance_action(request):
     if request.method == 'POST':
         try:
             employee_profile = Employee.objects.get(user=request.user)
+            today = timezone.now().date()
+            now = timezone.now()
+
+            # Find today's record
+            attendance = Attendance.objects.filter(employee=employee_profile, date=today).first()
+
+            if not attendance:
+                # STATE 1: CLOCK IN
+                Attendance.objects.create(
+                    employee=employee_profile,
+                    date=today,
+                    clock_in=now
+                )
+                messages.success(request, "Clocked in successfully!")
             
-            # Create the attendance record
-            Attendance.objects.create(
-                employee=employee_profile,
-                date=timezone.now().date(),
-                clock_in=timezone.now()
-            )
-            messages.success(request, "Clocked in successfully!")
+            elif not attendance.clock_out:
+                # STATE 2: CLOCK OUT
+                attendance.clock_out = now
+                attendance.save()
+                messages.success(request, "Clocked out successfully! Shift ended.")
+            
+            else:
+                messages.warning(request, "You have already completed your shift today.")
+
         except Employee.DoesNotExist:
-            messages.error(request, "Employee profile not found.")
-            
-    return redirect('dashboard-router')
+            messages.error(request, "Profile error.")
+
+    return redirect('employee-dashboard')
