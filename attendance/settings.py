@@ -211,3 +211,7 @@ LOGIN_URL = 'login'
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# settings.py
+TIME_ZONE = 'Africa/Addis_Ababa' # Change this to your actual timezone
+USE_TZ = True
