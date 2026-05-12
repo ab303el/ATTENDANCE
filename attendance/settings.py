@@ -110,10 +110,21 @@ WSGI_APPLICATION = 'attendance.wsgi.application'
 
 
 # This is the "Railway Standard" way
-import dj_database_url
+# import dj_database_url
+
+# DATABASES = {
+#     'default': dj_database_url.parse('postgresql://postgres.wcdnwwnhonvfdppfzgeg:HtvDDaVK9zP3rst5@://supabase.com')
+# }
 
 DATABASES = {
-    'default': dj_database_url.parse('postgresql://postgres.wcdnwwnhonvfdppfzgeg:HtvDDaVK9zP3rst5@://supabase.com')
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres.wcdnwwnhonvfdppfzgeg',
+        'PASSWORD': 'HtvDDaVK9zP3rst5',
+        'HOST': '://supabase.com',
+        'PORT': '6543',
+    }
 }
 
 
