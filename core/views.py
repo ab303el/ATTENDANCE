@@ -25,6 +25,7 @@ from django.core.exceptions import PermissionDenied     #admin only
 
 from .forms import EmployeeSignupForm # Import your new form
 
+from django.contrib.auth.models import Group
 
 class ManagerLateDashboardAPI(generics.ListCreateAPIView):
 
@@ -242,7 +243,6 @@ class EmployeeDetailAPI(APIView):
 
 # web page views
 #signup view
-from django.contrib.auth.models import Group
 
 def login_view(request):
     if request.method == 'POST':
@@ -281,7 +281,7 @@ def dashboard_router(request):
         return redirect('admin-dashboard')
     
     # Check for group safely without crashing
-    if request.user.groups.filter(name='Employees').exists():
+    if request.user.groups.filter(name='Employee').exists():
         return redirect('employee-dashboard')
         
     # Default fallback so no one gets 'bounced'
@@ -304,4 +304,4 @@ def profile_view(request):
 @login_required
 def attendance_action(request):
     # Your logic for clocking in/out
-    return redirect('employee-dashboard')
+    return redirect('dashboard-router')
