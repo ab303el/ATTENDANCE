@@ -89,45 +89,20 @@ WSGI_APPLICATION = 'attendance.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv('DB_NAME'),
-#         'USER': os.getenv('DB_USER'),
-#         'PASSWORD': os.getenv('DB_PASSWORD'),
-#         'HOST': os.getenv('DB_HOST'),
-#         'PORT': os.getenv('DB_PORT'),
-#     }
-# }
 
-
-# DATABASES = {
-#     'default': dj_database_url.config(
-#         default=os.environ.get('DATABASE_URL'),
-#         conn_max_age=600
-#     )
-# }
-
-
-# This is the "Railway Standard" way
-# import dj_database_url
-
-# DATABASES = {
-#     'default': dj_database_url.parse('postgresql://postgres.wcdnwwnhonvfdppfzgeg:HtvDDaVK9zP3rst5@://supabase.com')
-# }
+# Database
+# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres.wcdnwwnhonvfdppfzgeg',
-        'PASSWORD': 'HtvDDaVK9zP3rst5',
-        # Remove the '://' and use the specific pooler host
-        'HOST': 'aws-1-eu-central-1.pooler.supabase.com',
-        'PORT': '6543',
+        'NAME': os.getenv('DB_NAME', 'postgres'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT', '6543'),
     }
 }
-
 
 
 # Password validation
