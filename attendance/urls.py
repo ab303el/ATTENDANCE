@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path , include
 from django.contrib.auth import views as auth_views
 from rest_framework_simplejwt.views import (
     TokenObtainPairView ,# This tells DRF: "By default, force everyone to authenticate using JWT." 
@@ -53,6 +53,8 @@ urlpatterns = [
     path('core/attendance/action/', attendance_action, name='attendance-action'),
 
     path('dashboard-router/', dashboard_router, name='dashboard-router'),
+
+    path('', include('django_prometheus.urls')), # Exposes /metrics
 
 
 ]

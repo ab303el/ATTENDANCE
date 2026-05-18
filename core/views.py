@@ -28,6 +28,8 @@ from .forms import EmployeeSignupForm # Import your new form
 
 from django.contrib.auth.models import Group
 
+from .tasks import send_clock_in_alert # Import the task from celery
+
 class ManagerLateDashboardAPI(generics.ListCreateAPIView):
 
     permission_classes = [IsAdminUser]
@@ -142,7 +144,14 @@ class AttendanceListCreateAPI(generics.ListCreateAPIView):
         This intercepts the POST save to attach the logged-in user.
         """
         employee_profile = Employee.objects.get(user = self.request.user)
-        serializer.save(employee = employee_profile)   
+        attendance_record = serializer.save(employee = employee_profile)   
+
+        # REAL WORLD MAGIC: Use .delay()
+        # This takes 0.01 seconds. It slaps the ticket on the Redis rail and moves on!
+        send_clock_in_alert.delay(
+            employee_name = employee_profile.first_name ,
+            time_clocked_in = str(attendance_record.clock_in)
+        )
 
 
 class EmployeeListCreateAPI(APIView):

@@ -49,11 +49,13 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'corsheaders',
     'django_filters',
+    'django_prometheus',
     'core',
     'sendmail',
 ]
 
 MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware', # MUST BE FIRST
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', # Add this line,
@@ -63,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',  # MUST BE LAST
 ]
 
 ROOT_URLCONF = 'attendance.urls'
@@ -191,10 +194,15 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 TIME_ZONE = 'Africa/Addis_Ababa' # Change this to your actual timezone
 USE_TZ = True
 
-# Add this to settings.py
+# Add this to settings.py host railway 
 CSRF_TRUSTED_ORIGINS = [
     'https://railway.app',
     'https://*.up.railway.app'  # This covers any Railway subdomains
 ]
 
+# company_api/settings.py
 
+# Celery & Redis Configuration
+CELERY_BROKER_URL = 'redis://localhost:6379/0' # The URL where Redis lives
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
